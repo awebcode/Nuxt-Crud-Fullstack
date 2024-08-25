@@ -4,7 +4,7 @@ const router = useRouter()
 
 const bookId = route.params.id
 
-const { data: book, pending } = useLazyFetch(() => `/api/books/${bookId}`, {
+const { data: book, status } = useFetch(() => `/api/books/${bookId}`, {
   key: 'book',
   pick: ['title', 'description', 'author'],
 })
@@ -15,7 +15,7 @@ const author = ref('')
 const titleError = ref('')
 const descriptionError = ref('')
 const authorError = ref('')
-
+const pending = computed(() => status.value === 'pending')
 watch(pending, () => {
   title.value = String(book.value?.title ?? 'Loading...')
   description.value = String(book.value?.description ?? 'Loading...')
@@ -49,10 +49,8 @@ useHead({
 
 <template>
   <div class="flex flex-col items-center justify-center w-full max-w-5xl h-full my-5 space-y-5">
-    <div v-if="pending" class="flex flex-col items-center justify-center w-full h-screen">
-      <p>Loading...</p>
-    </div>
-    <div v-else class="flex flex-col items-center w-full h-full space-y-10">
+    
+    <div  class="flex flex-col items-center w-full h-full space-y-10">
       <h1 class="font-bold text-3xl">Edit this book titled {{ book?.title }}</h1>
       <form v-on:submit="handleUpdateBook" class="flex flex-col items-center w-full space-y-3">
       <input 
@@ -90,7 +88,9 @@ useHead({
         <button
           type="submit"
           class="w-auto px-5 py-2 rounded-md text-white bg-green-500 hover:opacity-50"
-        >
+       :disabled="status === 'pending'"
+            >
+            <div v-if="status === 'pending'" class="h-8 w-8 animate-spin border border-blue-600"></div>
           Update
         </button>
       </div>
